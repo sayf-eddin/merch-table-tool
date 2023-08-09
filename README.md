@@ -1,2 +1,2 @@
 # merch-table-tool
-Tracks merch sold from each vendor.
+Tracks merchandise sold from each vendor.
