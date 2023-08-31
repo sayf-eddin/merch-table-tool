@@ -4,3 +4,4 @@ db.sqlite3
 CACHE
 merchtable/media
 __pycache__
+migrations

@@ -1,9 +1,9 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 import uuid
 
-from django.core.files.uploadedfile import SimpleUploadedFile
-import os
 from django.conf import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 
 filename = settings.BASE_DIR / "merchtable/static/media/default_photo.jpg"
@@ -34,7 +34,7 @@ class Item(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=100)
-    price = models.DecimalField(max_digits=5, decimal_places=2)
+    price = models.DecimalField(max_digits=5, decimal_places=2, validators=[MinValueValidator(0.01)])
     photo = models.ImageField(blank=True, null=True)
     seller = models.ForeignKey("Seller", related_name="items", on_delete=models.CASCADE)
 

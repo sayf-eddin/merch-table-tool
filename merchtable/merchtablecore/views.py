@@ -23,9 +23,11 @@ def merch_form(request):
     for seller in Seller.objects.all():
         sellers[seller] = seller.items.all()
     if request.method == 'POST':
-        #TODO
-        print("Submitted")
-        pass
+        # TODO
+        # Validate if values are > 0
+        # Create/update excel sheet
+        message = "Transaction recorded!"
+        return render(request, "merch_form.html", context={"sellers": sellers, "message": message})
     return render(request, "merch_form.html", context={"sellers": sellers})
 
 def add_seller(request):

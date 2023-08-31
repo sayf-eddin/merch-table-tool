@@ -20,6 +20,10 @@ form {
   margin-left: 35%;
 }
 
+input[type="number" i] {
+  max-width: 6rem;
+}
+
 .btn {
   margin: 0.5rem 1rem;
 }
