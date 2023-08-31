@@ -3,8 +3,13 @@
 import os
 import sys
 
+import dotenv
+from pathlib import Path
+
 
 def main():
+    dotenv.read_dotenv(Path(__file__).resolve().parent.parent / ".env")
+    
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'merchtable.settings')
     try:

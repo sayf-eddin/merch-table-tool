@@ -13,9 +13,21 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
 from django.urls import path
+from django.views.generic import RedirectView
+from django.conf.urls import url
+from merchtablecore import views
+
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-]
+    path('', views.dashboard, name="home"),
+    path('form/', views.merch_form, name="form"),
+    path('vendor/add/', views.add_seller, name="add_seller"),
+    path('vendor/<uuid:seller_id>.UUID/', views.update_seller, name="update_seller"),
+    path('vendor/<uuid:seller_id>.UUID/delete/', views.delete_seller, name="delete_seller"),
+    path('item/add/', views.add_items, name="add_item"),
+    path('item/<uuid:item_id>.UUID/', views.update_item, name="update_item"),
+    path('item/<uuid:item_id>.UUID/delete/', views.delete_item, name="delete_item"),
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + [url(r'^', RedirectView.as_view(url='/'))]

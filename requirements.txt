@@ -1,1 +1,5 @@
 Django==3.2.20
+django-compressor==4.4
+django-dotenv==1.4.2
+django-libsass==0.9
+Pillow==9.5.0

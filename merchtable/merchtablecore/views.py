@@ -9,19 +9,24 @@ from .models import Seller, Item
 def dashboard(request):
     sellers = {}
     for seller in Seller.objects.all():
-        sellers[str(seller)] = seller.items.all()
-    return render(request, "dashboard.html", context={"sellers": sellers})
+        sellers[seller] = seller.items.all()
+    if sellers == {}:
+        return render(request, "dashboard.html", context={"home": True})
+    if not Item.objects.all():
+        return render(request, "dashboard.html", context={"home": True, "sellers": sellers})
+    return render(request, "dashboard.html", context={"home": True, "sellers": sellers, "item": True})
 
 def merch_form(request):
+    if not Item.objects.all():
+        return render(request, "merch_form.html", context={"error": "Cannot create form, no items exist."})
+    sellers = {}
+    for seller in Seller.objects.all():
+        sellers[seller] = seller.items.all()
     if request.method == 'POST':
         #TODO
+        print("Submitted")
         pass
-    fields = {}
-    for seller in Seller.objects.all():
-        for item in seller.items.all():
-            fields[str(item)] = IntegerField()
-    form = type('MerchForm', (forms.Form), fields)
-    return render(request, "merch_form.html", context={"form": form})
+    return render(request, "merch_form.html", context={"sellers": sellers})
 
 def add_seller(request):
     if request.method == 'POST':
@@ -30,14 +35,6 @@ def add_seller(request):
             form.save()
             return redirect('home')
     return render(request, 'add_seller.html',context={"form": SellerForm()})
-
-def add_items(request):
-    if request.method == 'POST':
-        form = ItemForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return redirect('home')
-    return render(request, 'add_item.html',context={"form": ItemForm()})
 
 def update_seller(request, seller_id):
     seller = get_object_or_404(Seller, id=seller_id)
@@ -48,7 +45,20 @@ def update_seller(request, seller_id):
             return redirect('home')
     else:
         form = SellerForm(instance=seller)
-    return render(request, 'update_seller.html', context={"form": form})
+    return render(request, 'update_seller.html', context={"form": form, "name": seller.name})
+
+def delete_seller(request, seller_id):
+    seller = get_object_or_404(Seller, id=seller_id)
+    seller.delete()
+    return redirect("home")
+
+def add_items(request):
+    if request.method == 'POST':
+        form = ItemForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+    return render(request, 'add_item.html',context={"form": ItemForm()})
 
 def update_item(request, item_id):
     item = get_object_or_404(Item, id=item_id)
@@ -59,12 +69,7 @@ def update_item(request, item_id):
             return redirect('home')
     else:
         form = ItemForm(instance=item)
-    return render(request, 'update_item.html', context={"form": form})
-
-def delete_seller(request, seller_id):
-    seller = get_object_or_404(Seller, id=seller_id)
-    seller.delete()
-    return redirect("home")
+    return render(request, 'update_item.html', context={"form": form, "name": item.name})
 
 def delete_item(request, item_id):
     item = get_object_or_404(Item, id=item_id)
