@@ -30,4 +30,6 @@ urlpatterns = [
     path('item/add/', views.add_items, name="add_item"),
     path('item/<uuid:item_id>.UUID/', views.update_item, name="update_item"),
     path('item/<uuid:item_id>.UUID/delete/', views.delete_item, name="delete_item"),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + [url(r'^', RedirectView.as_view(url='/'))]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += [url(r'^', RedirectView.as_view(url='/'))]

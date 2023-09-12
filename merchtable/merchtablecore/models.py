@@ -5,9 +5,8 @@ import uuid
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-
+# Store default photo
 filename = settings.BASE_DIR / "merchtable/static/media/default_photo.jpg"
-
 file = open(filename, 'rb')
 default_pic = SimpleUploadedFile("default_photo.jpg", file.read(), content_type="image")
 file.close()
