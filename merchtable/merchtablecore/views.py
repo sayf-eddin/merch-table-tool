@@ -1,9 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 
 from django import forms
-from django.forms.fields import IntegerField
 from .forms import SellerForm, ItemForm
 from .models import Seller, Item
+
+from django.conf import settings
+import os
+import pandas as pd
 
 
 def dashboard(request):
@@ -23,10 +26,72 @@ def merch_form(request):
     for seller in Seller.objects.all():
         sellers[seller] = seller.items.all()
     if request.method == 'POST':
-        # TODO
-        # Validate if values are > 0
-        # Create/update excel sheet
-        message = "Transaction recorded!"
+        sales_file = "merch.xlsx"
+        dfs = {}
+        total_qty = 0
+        total_amt = 0
+        if (os.path.exists(settings.BASE_DIR / sales_file)):
+            for seller, items in sellers.items():
+                seller_qty = 0
+                seller_amt = 0
+                df = pd.read_excel(sales_file, sheet_name=seller.name, index_col=0, engine='openpyxl')
+                for item in items:
+                    qty = int(request.POST[str(item)])
+                    if qty < 0:
+                        context = {"sellers": sellers, "message": "Error processing form."}
+                        return render(request, "merch_form.html", context=context)
+                    if qty > 0:
+                        amount = qty * item.price
+                        df.at[item.name, "Qty"] += qty
+                        df.at[item.name, "Amount"] += float(amount)
+                        seller_qty += qty
+                        seller_amt += amount  
+                        total_qty += qty
+                        total_amt += amount
+                df.at["Total", "Qty"] += seller_qty
+                df.at["Total", "Amount"] += float(seller_amt)
+                dfs[seller.name] = df
+                
+            df_total = pd.read_excel(sales_file, sheet_name="Totals", engine='openpyxl')
+            df_total.at[0, "Total Qty"] += total_qty
+            df_total.at[0, "Total Amount"] += float(total_amt)
+            with pd.ExcelWriter(sales_file, engine='openpyxl', mode='w') as writer: 
+                for seller, df in dfs.items():
+                    df.to_excel(writer, sheet_name=seller)
+                
+                df_total.to_excel(writer, sheet_name="Totals", index=False)
+            
+        else:
+            for seller, items in sellers.items():
+                seller_qty = 0
+                seller_amt = 0
+                df = pd.DataFrame(columns=["Item Name", "Price", "Qty", "Amount"])
+                for item in items:
+                    qty = int(request.POST[str(item)])
+                    if qty < 0:
+                        context = {"sellers": sellers, "message": "Error processing form."}
+                        return render(request, "merch_form.html", context=context)
+                    amount = qty * item.price
+                    row = {"Item Name": item.name, "Price": item.price, "Qty": qty, "Amount": amount}
+                    df = df.append(row, ignore_index=True)
+                    seller_qty += qty
+                    seller_amt += amount
+                    total_qty += qty
+                    total_amt += amount
+                row = {"Item Name": "Total", "Price": "", "Qty": seller_qty, "Amount": seller_amt}
+                df = df.append(row, ignore_index=True)
+                dfs[seller.name] = df
+                
+            df_total = pd.DataFrame(columns=["Total Qty", "Total Amount"])
+            row = {"Total Qty": total_qty, "Total Amount": total_amt}
+            df_total = df_total.append(row, ignore_index=True)
+            df_total.to_excel(sales_file, sheet_name="Totals", index=False)
+
+            with pd.ExcelWriter(sales_file, engine='openpyxl', mode='a') as writer: 
+                for seller, df in dfs.items():
+                    df.to_excel(writer, sheet_name=seller, index=False)
+                
+        message = "Transaction recorded in " + sales_file + "!"
         return render(request, "merch_form.html", context={"sellers": sellers, "message": message})
     return render(request, "merch_form.html", context={"sellers": sellers})
 

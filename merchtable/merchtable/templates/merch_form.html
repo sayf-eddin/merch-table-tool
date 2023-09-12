@@ -34,7 +34,7 @@
       {% endif %}
       <div class="fieldWrapper">
         <label for="id_{{ item }}">{{ item }}:</label> 
-        <input type="number" name="{{ item }}" id="id_{{ item }}" step="1"  min="0">
+        <input type="number" name="{{ item }}" id="id_{{ item }}" step="1"  min="0" value="0">
       </div>
 
       <h4 id="total_{{ item.name }}">$0.00</h4>
@@ -63,6 +63,7 @@
 {% block scripts %}
 
   <script>
+    // getElem calls repeated due to Django templating
     // Update totals
     var total = document.getElementById("total");
     // {% for seller, items in sellers.items %}
@@ -81,34 +82,62 @@
         oldItemTotal = parseFloat(oITStr);
 
       var newItemTotal = Math.round(count * price * 100) / 100;
-      document.getElementById("total_{{ item.name }}").innerHTML = "$" + newItemTotal;
+      if (newItemTotal == 0)
+        document.getElementById("total_{{ item.name }}").innerHTML = "$0.00";
+      else {
+        var nITStr = "$" + newItemTotal;
+        if (nITStr.split(".")[1].length < 2)
+          nITStr += "0";
+        document.getElementById("total_{{ item.name }}").innerHTML = nITStr;
+      }
 
       // Update seller total
       if (oITStr == "0.00")
-        change = newItemTotal
+        change = newItemTotal;
       else 
         change = newItemTotal - oldItemTotal;
       var i = document.getElementById("total_{{ seller.name }}").innerHTML.indexOf("$") + 1;
       var j = document.getElementById("total_{{ seller.name }}").innerHTML.indexOf("-") - 1;
       var oSTStr = document.getElementById("total_{{ seller.name }}").innerHTML.slice(i, j);
-      if (oSTStr == "0.00")
-        document.getElementById("total_{{ seller.name }}").innerHTML = document.getElementById("total_{{ seller.name }}").innerHTML.replace("0.00", change + "");
+      if (oSTStr == "0.00") {
+        var nSTStr = change + "";
+        if (nSTStr.split(".")[1].length < 2)
+          nSTStr += "0";
+        document.getElementById("total_{{ seller.name }}").innerHTML = document.getElementById("total_{{ seller.name }}").innerHTML.replace("0.00", nSTStr);
+      }
       else {
         var oldSellerTotal = parseFloat(oSTStr);
         var newSellerTotal = Math.round((oldSellerTotal + change) * 100) / 100;
-        document.getElementById("total_{{ seller.name }}").innerHTML = document.getElementById("total_{{ seller.name }}").innerHTML.replace(oldSellerTotal + "", newSellerTotal + "");
+        if (newSellerTotal == 0)
+          document.getElementById("total_{{ seller.name }}").innerHTML = document.getElementById("total_{{ seller.name }}").innerHTML.replace(oSTStr, "0.00");
+        else {
+          var nSTStr = newSellerTotal + "";
+          if (nSTStr.split(".")[1].length < 2)
+            nSTStr += "0";
+          document.getElementById("total_{{ seller.name }}").innerHTML = document.getElementById("total_{{ seller.name }}").innerHTML.replace(oSTStr, nSTStr);
+        }
       }
 
       // Update total
-
       var k = total.innerHTML.indexOf("$") + 1;
       oTStr = total.innerHTML.slice(k)
-      if (oTStr == "0.00")
-        total.innerHTML = total.innerHTML.replace("0.00", change);
+      if (oTStr == "0.00") {
+        var nTStr = change + "";
+        if (nTStr.split(".")[1].length < 2)
+          nTStr += "0";
+        total.innerHTML = total.innerHTML.replace("0.00", nTStr);
+      }
       else {
         var oldTotal = parseFloat(oTStr);
         var newTotal = Math.round((oldTotal + change) * 100) / 100;
-        total.innerHTML = total.innerHTML.replace(oldTotal + "", newTotal + "");
+        if (newTotal == 0)
+          total.innerHTML = total.innerHTML.replace(oTStr, "0.00");
+        else {
+          var nTStr = newTotal + "";
+          if (nTStr.split(".")[1].length < 2)
+            nTStr += "0";
+          total.innerHTML = total.innerHTML.replace(oTStr, nTStr);
+        }
       }
     });
     // {% endfor %}
