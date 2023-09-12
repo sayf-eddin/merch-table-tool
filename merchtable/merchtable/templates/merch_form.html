@@ -63,6 +63,15 @@
 {% block scripts %}
 
   <script>
+    // Makes calculated totals look nice ($X.XX)
+    function fixDigits(str) {
+      if (!(str.includes(".")))
+        str += ".00";
+      else if (str.split(".")[1].length < 2)
+        str += "0";
+      return str;
+    }
+
     // getElem calls are repeated due to Django templating
 
     // Update totals
@@ -92,9 +101,8 @@
         document.getElementById("total_{{ item.name }}").innerHTML = "$0.00";
       else {
         var nITStr = "$" + newItemTotal;
-        // Add hundreths digit if missing
-        if (nITStr.split(".")[1].length < 2)
-          nITStr += "0";
+        // Add digit(s) if missing
+        nITStr = fixDigits(nITStr)
         document.getElementById("total_{{ item.name }}").innerHTML = nITStr;
       }
 
@@ -108,9 +116,8 @@
       var oSTStr = document.getElementById("total_{{ seller.name }}").innerHTML.slice(i, j);
       if (oSTStr == "0.00") {
         var nSTStr = change + "";
-        // Add hundreths digit if missing
-        if (nSTStr.split(".")[1].length < 2)
-          nSTStr += "0";
+        // Add digit(s) if missing
+        nSTStr = fixDigits(nSTStr)
         document.getElementById("total_{{ seller.name }}").innerHTML = document.getElementById("total_{{ seller.name }}").innerHTML.replace("0.00", nSTStr);
       }
       else {
@@ -121,9 +128,8 @@
           document.getElementById("total_{{ seller.name }}").innerHTML = document.getElementById("total_{{ seller.name }}").innerHTML.replace(oSTStr, "0.00");
         else {
           var nSTStr = newSellerTotal + "";
-          // Add hundreths digit if missing
-          if (nSTStr.split(".")[1].length < 2)
-            nSTStr += "0";
+          // Add digit(s) if missing
+          nSTStr = fixDigits(nSTStr)
           document.getElementById("total_{{ seller.name }}").innerHTML = document.getElementById("total_{{ seller.name }}").innerHTML.replace(oSTStr, nSTStr);
         }
       }
@@ -133,9 +139,8 @@
       oTStr = total.innerHTML.slice(k)
       if (oTStr == "0.00") {
         var nTStr = change + "";
-        // Add hundreths digit if missing
-        if (nTStr.split(".")[1].length < 2)
-          nTStr += "0";
+        // Add digit(s) if missing
+        nTStr = fixDigits(nTStr)
         total.innerHTML = total.innerHTML.replace("0.00", nTStr);
       }
       else {
@@ -146,9 +151,8 @@
           total.innerHTML = total.innerHTML.replace(oTStr, "0.00");
         else {
           var nTStr = newTotal + "";
-          // Add hundreths digit if missing
-          if (nTStr.split(".")[1].length < 2)
-            nTStr += "0";
+          // Add digit(s) if missing
+          nTStr = fixDigits(nTStr)
           total.innerHTML = total.innerHTML.replace(oTStr, nTStr);
         }
       }
